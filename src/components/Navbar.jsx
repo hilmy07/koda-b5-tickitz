@@ -24,12 +24,16 @@ function Navbar() {
 
         {/* Tombol kanan desktop */}
         <div className="hidden md:flex gap-3 text-sm">
-          <button className="px-5 py-2 border border-blue-600 text-blue-600 rounded-md">
-            Sign In
-          </button>
-          <button className="px-5 py-2 bg-blue-600 text-white rounded-md">
-            Sign Up
-          </button>
+          <Link to="/Login">
+            <button className="px-5 py-2 border border-blue-600 text-blue-600 rounded-md">
+              Sign In
+            </button>
+          </Link>
+          <Link to="/SignUp">
+            <button className="px-5 py-2 bg-blue-600 text-white rounded-md">
+              Sign Up
+            </button>
+          </Link>
         </div>
 
         {/* Burger mobile */}
@@ -52,12 +56,16 @@ function Navbar() {
             <button className="hover:text-blue-600">Buy Ticket</button>
 
             <div className="flex flex-col gap-3 w-full max-w-xs mt-2">
-              <button className="px-5 py-2 border border-blue-600 text-blue-600 rounded-md">
-                Sign In
-              </button>
-              <button className="px-5 py-2 bg-blue-600 text-white rounded-md">
-                Sign Up
-              </button>
+              <Link to="/Login">
+                <button className="w-full px-5 py-2 border border-blue-600 text-blue-600 rounded-md">
+                  Sign In
+                </button>
+              </Link>
+              <Link to="/SignUp">
+                <button className="w-full px-5 py-2 bg-blue-600 text-white rounded-md">
+                  Sign Up
+                </button>
+              </Link>
             </div>
           </nav>
         </div>
