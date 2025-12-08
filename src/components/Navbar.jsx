@@ -24,12 +24,12 @@ function Navbar() {
 
         {/* Tombol kanan desktop */}
         <div className="hidden md:flex gap-3 text-sm">
-          <Link to="/Login">
+          <Link to="/Login" target="_blank">
             <button className="px-5 py-2 border border-blue-600 text-blue-600 rounded-md">
               Sign In
             </button>
           </Link>
-          <Link to="/SignUp">
+          <Link to="/SignUp" target="_blank">
             <button className="px-5 py-2 bg-blue-600 text-white rounded-md">
               Sign Up
             </button>
@@ -56,12 +56,12 @@ function Navbar() {
             <button className="hover:text-blue-600">Buy Ticket</button>
 
             <div className="flex flex-col gap-3 w-full max-w-xs mt-2">
-              <Link to="/Login">
+              <Link to="/Login" target="_blank">
                 <button className="w-full px-5 py-2 border border-blue-600 text-blue-600 rounded-md">
                   Sign In
                 </button>
               </Link>
-              <Link to="/SignUp">
+              <Link to="/SignUp" target="_blank">
                 <button className="w-full px-5 py-2 bg-blue-600 text-white rounded-md">
                   Sign Up
                 </button>
