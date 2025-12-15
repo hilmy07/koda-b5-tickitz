@@ -1,9 +1,14 @@
 import React, { useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
 import google from "../assets/google.png";
 import facebook from "../assets/facebook.png";
+import { useAuth } from "../context/AuthContext";
+// import tickitz from "../assets/tickitz.png";
 
 function Login() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+  const [error, setError] = useState("");
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -11,19 +16,37 @@ function Login() {
 
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  // const handleSubmit = (e) => {
+  //   e.preventDefault();
 
-    const data = { email: form.email, password: form.password };
-    console.log(data);
+  //   const data = { email: form.email, password: form.password };
+  //   console.log(data);
+  // };
+  const validUser = {
+    email: "admin@mail.com",
+    password: "123456",
+  };
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    if (
+      form.email === validUser.email &&
+      form.password === validUser.password
+    ) {
+      login();
+      navigate("/"); // ⬅️ ke Home dulu
+    } else {
+      setError("Email atau password salah!");
+    }
   };
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-[url('/src/assets/image1.png')] md:bg-[url('/src/assets/image.png')] bg-cover bg-center px-4">
+      <div className="min-h-screen flex items-center justify-center bg-[url('/src/assets/image1.png')] md:bg-[url('/src/assets/image.png')] bg-cover bg-center px-4 before:absolute before:inset-0 before:bg-black/50">
+        {/* <img src={tickitz} alt="tickitz" /> */}
         <form
-          className="bg-white shadow-md rounded-xl p-8 w-full max-w-sm h-[470px]"
-          onSubmit={handleSubmit}
+          className="bg-white shadow-md rounded-xl p-8 w-full max-w-sm h-[470px] z-3"
+          onSubmit={handleLogin}
         >
           <h1 className="text-2xl font-bold text-center mb-6">Log In</h1>
 
@@ -41,6 +64,7 @@ function Login() {
               placeholder=" Write your email"
               className="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-black focus:outline-none"
             />
+            {error && <div className="text-red-500 text-sm mb-3">{error}</div>}
           </div>
 
           {/* Password */}
@@ -106,6 +130,9 @@ function Login() {
                   </svg>
                 )}
               </button>
+              {error && (
+                <div className="text-red-500 text-sm mb-3">{error}</div>
+              )}
             </div>
           </div>
 

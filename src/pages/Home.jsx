@@ -4,8 +4,13 @@ import Guaranteed from "../assets/guaranteed.png";
 import Affordable from "../assets/affordable.png";
 import Customer from "../assets/customer.png";
 import Footer from "../components/Footer";
+// import { useSelector } from "react-redux";
+// import { useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
+import { addSubscribe } from "../redux/reducers/subscribes";
+import { useNavigate } from "react-router";
 
-const API_KEY = "8277907f2f12260ea27be8b6301c557f";
+const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
 const genreMap = {
   28: "Action",
@@ -23,12 +28,16 @@ const dateByIndex = {
 const VISIBLE_COUNT = 4;
 
 function Home() {
+  const navigate = useNavigate();
   const [movies, setMovies] = useState([]);
   const [upcomingStart, setUpcomingStart] = useState(0); // carousel upcoming
   const [_, setActiveArrow] = useState(null);
   const [firstName, setFirstname] = useState("");
   const [email, setEmail] = useState("");
-  const [__, setSubscribe] = useState([]);
+  // const [__, setSubscribe] = useState([]);
+  const dispatch = useDispatch();
+
+  // const subscribes = useSelector((state) => state.subscribes.items);
 
   useEffect(() => {
     (async () => {
@@ -65,34 +74,31 @@ function Home() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
     const data = {
+      id: Date.now(),
       firstName,
       email,
     };
 
-    setSubscribe((prev) => {
-      const updated = [...prev, data];
-      console.log(updated);
-      return updated;
-    });
-  };
+    dispatch(addSubscribe(data));
 
-  // useEffect(() => {
-  //   console.log("subscribe state:", subscribe);
-  // }, [subscribe]);
+    console.log("Subscribe Saved:", data);
+    setFirstname("");
+    setEmail("");
+  };
+  const slugify = (text) =>
+    text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
 
   return (
     <>
-      <header>
-        <Navbar />
-      </header>
-
       <main className="mt-24 md:mt-28">
         <div className="max-w-7xl mx-auto px-4 md:px-8">
           {/* HERO */}
-          <section className="flex flex-col md:flex-row">
-            <div className="flex flex-col text-center mt-12 md:mt-32 md:text-left md:flex-1">
+          <section className="flex flex-col md:flex-row md:justify-between">
+            <div className="flex flex-col text-center mt-12 md:mt-32 md:text-left md:flex-1 lg:pr-62">
               <h1 className="text-2xl font-medium text-[#1d4ed8]">
                 Movie Ticket Purchases #1 in Indonesia
               </h1>
@@ -104,15 +110,14 @@ function Home() {
               </h3>
             </div>
 
-            <div className="mt-12 mb-10 w-full md:flex-1">
+            <div className="mt-12 mb-10 md:flex">
               <div
                 className="
-                  grid grid-cols-2 gap-3
-                  max-w-[360px] mx-auto px-2
-                  md:w-[420px]
-                  lg:max-w-[460px]
-                  md:ml-80
-                "
+                      grid grid-cols-2 gap-3
+                      w-full max-w-[450px]
+                      mx-auto px-2
+                      md:mx-0
+                    "
               >
                 {movies.slice(0, 4).map((movie, index) => {
                   const topCards = index === 0 || index === 1;
@@ -120,19 +125,19 @@ function Home() {
                   const isShort = index === 0 || index === 3;
                   const isThree = index === 2;
                   const aspectClass = isShort ? "aspect-[4/3]" : "aspect-[4/5]";
-                  const translateMd = isThree ? "md:-translate-y-25" : "";
+                  const translateMd = isThree ? "md:-translate-y-26" : "";
 
                   return (
                     <div
                       key={movie.id}
                       className={`
-                        group relative w-full overflow-hidden shadow-xl
-                        ${aspectClass}
-                        ${topCards ? "rounded-t-[8px] rounded-b-none" : ""}
-                        ${bottomCards ? "rounded-b-[8px] rounded-t-none" : ""}
-                        ${isThree ? "-translate-y-19" : ""}
-                        ${translateMd}
-                      `}
+                          group relative w-full overflow-hidden shadow-xl
+                          ${aspectClass}
+                          ${topCards ? "rounded-t-[8px] rounded-b-none" : ""}
+                          ${bottomCards ? "rounded-b-[8px] rounded-t-none" : ""}
+                          ${isThree ? "-translate-y-19" : ""}
+                          ${translateMd}
+                        `}
                     >
                       <img
                         src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
@@ -257,16 +262,66 @@ function Home() {
             <div className="hidden md:flex justify-center gap-8 mb-4">
               {movies.slice(0, 4).map((movie) => (
                 <div key={movie.id} className="w-[300px] text-center">
-                  <div className="h-[350px] w-[270px] rounded-lg overflow-hidden shadow-md">
+                  {/* POSTER */}
+                  <div className="relative group h-[350px] w-[270px] rounded-lg overflow-hidden shadow-md">
+                    {/* IMAGE */}
                     <img
                       src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                       alt={movie.title}
                       className="w-full h-full object-cover"
                     />
+
+                    {/* OVERLAY */}
+                    <div
+                      className="
+                            absolute inset-0
+                            bg-black/60
+                            flex flex-col items-center justify-center gap-4
+                            opacity-0 group-hover:opacity-100
+                            transition-opacity duration-300
+                          "
+                    >
+                      {/* DETAILS */}
+                      <button
+                        className="
+                              px-8 py-2
+                              border border-white
+                              text-white text-sm
+                              rounded
+                              hover:bg-white hover:text-black
+                              transition
+                            "
+                        onClick={() =>
+                          navigate(
+                            `/app/v1/detail/${movie.id}/${slugify(movie.title)}`
+                          )
+                        }
+                      >
+                        Details
+                      </button>
+
+                      {/* BUY TICKET */}
+                      <button
+                        className="
+                            px-6 py-2
+                            bg-blue-600 text-white text-sm
+                            rounded
+                            hover:bg-blue-700
+                            transition
+                          "
+                        onClick={() => navigate(`/app/v1/order/${movie.id}`)}
+                      >
+                        Buy Ticket
+                      </button>
+                    </div>
                   </div>
+
+                  {/* TITLE */}
                   <h3 className="mt-3 text-sm font-medium text-slate-900 truncate">
                     {movie.title}
                   </h3>
+
+                  {/* GENRE */}
                   <div className="mt-2 flex flex-wrap gap-2 justify-center">
                     {movie.genre_ids?.slice(0, 3).map((id) => {
                       const name = genreMap[id];
@@ -315,48 +370,35 @@ function Home() {
                 <button
                   onClick={handleUpcomingNext}
                   className="
-      w-9 h-9 rounded-full border border-slate-300
-      flex items-center justify-center
-      text-slate-500 bg-white
-      hover:bg-blue-600 hover:text-white hover:border-blue-600
-      active:scale-95 transition
-    "
+                      w-9 h-9 rounded-full border border-slate-300
+                      flex items-center justify-center
+                      text-slate-500 bg-white
+                      hover:bg-blue-600 hover:text-white hover:border-blue-600
+                      active:scale-95 transition
+                    "
                 >
                   {">"}
                 </button>
               </div>
             </div>
 
-            {/* MOBILE: 2 upcoming */}
-            <div className="flex overflow-x-hidden justify-end mb-12 md:hidden">
-              {movies.slice(0, 2).map((movie, index) => (
-                <div key={movie.id}>
+            {/* MOBILE: UPCOMING SCROLL */}
+            <div className="flex overflow-x-auto flex-nowrap gap-6 mb-12 md:hidden px-2">
+              {movies.map((movie, index) => (
+                <div key={movie.id} className="shrink-0">
                   <img
                     src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
                     alt={movie.title}
-                    className={`h-[230px] w-[170px] mb-2 rounded ${
-                      index === 1 ? "scale-100 translate-x-12 w-[50px]" : ""
-                    }`}
+                    className="h-[230px] w-[170px] mb-2 rounded"
                   />
-                  <h1
-                    className={`font-medium text-l ${
-                      index === 1 ? "translate-x-10" : ""
-                    }`}
-                  >
-                    {movie.title}
-                  </h1>
-                  <p
-                    className={`text-[#1d4ed8] mb-2 ${
-                      index === 1 ? "translate-x-10" : ""
-                    }`}
-                  >
-                    {dateByIndex[index]}
+
+                  <h1 className="font-medium text-l">{movie.title}</h1>
+
+                  <p className="text-[#1d4ed8] mb-2">
+                    {dateByIndex[index] ?? "Coming soon"}
                   </p>
-                  <div
-                    className={`flex gap-2 flex-wrap ${
-                      index === 1 ? "translate-x-10" : ""
-                    }`}
-                  >
+
+                  <div className="flex gap-2 flex-wrap">
                     {movie.genre_ids?.slice(0, 3).map((id) => {
                       const name = genreMap[id];
                       if (!name) return null;
@@ -448,21 +490,17 @@ function Home() {
                 />
                 <button
                   type="submit"
-                  className="mt-2 md:mt-0 w-full max-w-sm px-24 md:px-2  py-[0.7rem] rounded-lg bg-white text-blue-700 font-medium text-sm"
+                  className="mt-2 md:mt-0 w-full max-w-sm px-24 md:px-2  py-[0.7rem] rounded-lg bg-white text-blue-700 font-medium text-sm cursor-pointer active:scale-95 transition"
                 >
                   Subscribe Now
                 </button>
               </form>
 
-              <div className="absolute -bottom-10 -right-6 w-32 h-32 rounded-full border-[6px] border-white/90" />
+              <div className="absolute -bottom-15 -right-6 w-32 h-32 rounded-full border-[6px] border-white/90" />
             </div>
           </section>
         </div>
       </main>
-
-      <footer>
-        <Footer />
-      </footer>
     </>
   );
 }

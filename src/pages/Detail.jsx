@@ -1,118 +1,153 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router";
 import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
-import image from "../../public/image1.png";
-import image1 from "../../public/image.png";
 import ebv from "../assets/ebv.png";
 import hiflix from "../assets/hiflix.png";
 import cineOne from "../assets/cineOne21.png";
 
+const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
+
 function Detail() {
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const [movie, setMovie] = useState(null);
+  const [director, setDirector] = useState(null);
+  const [cast, setCast] = useState([]);
+
+  useEffect(() => {
+    const fetchDetail = async () => {
+      const res = await fetch(
+        `https://api.themoviedb.org/3/movie/${id}?api_key=${API_KEY}&language=en-US`
+      );
+      const data = await res.json();
+      setMovie(data);
+    };
+
+    const fetchCredits = async () => {
+      const res = await fetch(
+        `https://api.themoviedb.org/3/movie/${id}/credits?api_key=${API_KEY}`
+      );
+      const data = await res.json();
+
+      const directorData = data.crew.find(
+        (person) => person.job === "Director"
+      );
+      setDirector(directorData || null);
+      setCast(data.cast.slice(0, 4));
+    };
+
+    fetchCredits();
+    fetchDetail();
+  }, [id]);
+
+  if (!movie) {
+    return <p className="text-center mt-20">Loading...</p>;
+  }
+
+  const castNames = cast.map((actor) => actor.name).join(", ");
+
   return (
     <>
       <header className="mb-12">
         <Navbar />
       </header>
 
-      <main>
-        {/* Hero poster */}
-        <section aria-label="Movie poster">
+      <main className="mb-12">
+        {/* ===== HERO POSTER ===== */}
+        <section>
           {/* mobile */}
           <div className="block md:hidden">
-            <img src={image} alt="background" className="h-[80vh] w-full" />
+            <img
+              src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+              alt={movie.title}
+              className="h-[80vh] w-full object-cover"
+            />
           </div>
 
           {/* desktop */}
           <div className="hidden md:block">
             <img
-              src={image1}
-              alt="backgroundDesktop"
-              className="h-[60vh] w-full"
+              src={`https://image.tmdb.org/t/p/original${movie.backdrop_path}`}
+              alt={movie.title}
+              className="h-[60vh] w-full object-cover"
             />
           </div>
 
-          <div className="absolute z-3 top-46 w-[90%] left-4">
+          {/* poster floating */}
+          <div className="absolute z-10 top-46 w-[90%] left-4">
             <img
-              src="https://image.tmdb.org/t/p/w500/3Wg1LBCiTEXTxRrkNKOqJyyIFyF.jpg"
-              alt="Zootopia 2 poster"
+              src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+              alt={movie.title}
               className="md:h-[400px] md:w-[300px] md:ml-32 md:mt-20"
             />
           </div>
         </section>
 
-        {/* Movie info */}
-        <section aria-label="Movie basic info" className="mt-32">
-          <h1 className="text-center font-bold text-2xl mt-6 md:ml-[-470px] md:mt-[-120px]">
-            Zootopia 2
-          </h1>
-          <div className="flex justify-center mt-2 md:ml-[-500px]">
-            <span className="px-4 py-1 text-l bg-slate-100 text-slate-600 rounded-full border border-slate-200">
-              Comedy
-            </span>
-          </div>
+        {/* ===== MOVIE INFO ===== */}
+        <section className="mt-32">
+          <section className="mt-32 px-6 md:px-0">
+            <div className="md:ml-[470px] md:mt-[-120px]">
+              {/* TITLE */}
+              <h1 className="font-bold text-2xl text-center md:text-left">
+                {movie.title}
+              </h1>
 
+              {/* GENRE */}
+              <div className="flex flex-wrap gap-2 mt-3 justify-center md:justify-start">
+                {movie.genres.map((g) => (
+                  <span
+                    key={g.id}
+                    className="px-4 py-1 text-sm bg-slate-100 text-slate-600 rounded-full border border-slate-200"
+                  >
+                    {g.name}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* RELEASE & RATING */}
           <div className="mt-8 ml-6 flex md:ml-[470px] md:mt-[10px]">
             <div>
-              <h2 className="font-medium text-[#8692A6]">Release date</h2>
-              <p>November 26, 2025</p>
+              <h2 className="font-medium text-[#8692A6] mr-20">Release date</h2>
+              <p>{movie.release_date}</p>
             </div>
-            <div className="ml-10">
-              <h2 className="font-medium text-[#8692A6]">Directed by</h2>
-              <p>Jon Watts</p>
+            {/* <div className="ml-10">
+              <h2 className="font-medium text-[#8692A6]">Rating</h2>
+              <p>{movie.vote_average.toFixed(1)}/10</p>
+            </div> */}
+            <div>
+              <h2 className="font-medium text-[#8692A6]">Casts</h2>
+              <p>{castNames || "-"}</p>
             </div>
           </div>
 
+          {/* DURATION */}
           <div className="mt-8 ml-6 mb-8 flex md:ml-[470px] md:mt-[10px]">
             <div>
-              <h2 className="font-medium text-[#8692A6]">Duration</h2>
-              <p>2 hrs 13 min</p>
+              <h2 className="font-medium text-[#8692A6] mr-16 md:mr-26">
+                Duration
+              </h2>
+              <p>{movie.runtime} min</p>
             </div>
-            <div className="block md:hidden">
-              <div className="ml-24">
-                <h2 className="font-medium text-[#8692A6]">Casts</h2>
-                <p>Shakira</p>
-                <p>Macaulay Culkin</p>
-                <p>etc.</p>
-              </div>
-            </div>
-            <div className="hidden md:block">
-              <div className="ml-24">
-                <h2 className="font-medium text-[#8692A6]">Casts</h2>
-                <p>Shakira, Macaulay Culkin, etc.</p>
-                {/* <p>Macaulay Culkin</p>
-                <p>etc.</p> */}
-              </div>
+            <div>
+              <h2 className="font-medium text-[#8692A6]">Directed by</h2>
+              <p>{director ? director.name : "-"}</p>
             </div>
           </div>
         </section>
 
-        {/* Synopsis mobile*/}
-        <section
-          aria-label="Synopsis"
-          className="ml-6 mr-6 text-justify block md:hidden"
-        >
+        {/* ===== SYNOPSIS ===== */}
+        {/* mobile */}
+        <section className="ml-6 mr-6 text-justify block md:hidden">
           <h2 className="text-xl mb-2 font-medium">Synopsis</h2>
-          <p className="text-[#a0a3bd]">
-            Zootopia 2 reunites optimistic Officer Judy Hopps and sly fox Nick
-            Wilde when a mysterious series of incidents threatens the fragile
-            peace between Zootopia’s diverse animal districts, drawing them into
-            a conspiracy involving newly arrived reptile citizens, old
-            prejudices, and a plan that could literally rewrite the city’s
-            environment and power structure.
-          </p>
+          <p className="text-[#a0a3bd]">{movie.overview}</p>
         </section>
 
-        {/* Synopsis desktop*/}
-        <section aria-label="Synopsis" className="ml-34 mr-100 hidden md:block">
+        {/* desktop */}
+        <section className="ml-34 mr-100 hidden md:block">
           <h2 className="text-xl mb-2 font-medium">Synopsis</h2>
-          <p className="text-[#a0a3bd]">
-            Zootopia 2 reunites optimistic Officer Judy Hopps and sly fox Nick
-            Wilde when a mysterious series of incidents threatens the fragile
-            peace between Zootopia’s diverse animal districts, drawing them into
-            a conspiracy involving newly arrived reptile citizens, old
-            prejudices, and a plan that could literally rewrite the city’s
-            environment and power structure.
-          </p>
+          <p className="text-[#a0a3bd]">{movie.overview}</p>
         </section>
 
         {/* Book Tickets desktop */}
@@ -221,7 +256,10 @@ function Detail() {
 
           {/* Book Now */}
           <div className="flex justify-center mt-6 mb-4">
-            <button className="px-10 py-3 rounded-md bg-blue-600 text-white text-sm font-medium shadow">
+            <button
+              className="px-10 py-3 rounded-md bg-blue-600 text-white text-sm font-medium shadow"
+              onClick={() => navigate(`/app/v1/order/${movie.id}`)}
+            >
               Book Now
             </button>
           </div>
@@ -450,10 +488,6 @@ function Detail() {
           </button>
         </nav>
       </main>
-
-      <footer className="mt-12">
-        <Footer />
-      </footer>
     </>
   );
 }

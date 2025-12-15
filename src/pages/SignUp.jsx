@@ -20,9 +20,9 @@ function Login() {
 
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center bg-[url('/src/assets/image1.png')] md:bg-[url('/src/assets/image.png')] bg-cover bg-center px-4">
+      <div className="min-h-screen flex items-center justify-center bg-[url('/src/assets/image1.png')] md:bg-[url('/src/assets/image.png')] bg-cover bg-center px-4 before:absolute before:inset-0 before:bg-black/50">
         <form
-          className="bg-white shadow-md rounded-xl p-8 w-full max-w-sm h-[470px]"
+          className="bg-white shadow-md rounded-xl p-8 w-full max-w-sm h-[470px] z-3"
           onSubmit={handleSubmit}
         >
           <h1 className="text-2xl font-bold text-center mb-6">Sign Up</h1>
