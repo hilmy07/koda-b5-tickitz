@@ -78,7 +78,7 @@ function Navbar() {
           className="md:hidden p-1"
           onClick={() => setOpen((prev) => !prev)}
         >
-          <CiMenuFries size={24} />
+          <CiMenuFries size={24} strokeWidth={2} />
         </button>
       </div>
 
