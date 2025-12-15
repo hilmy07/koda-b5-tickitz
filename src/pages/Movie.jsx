@@ -237,11 +237,7 @@ function Movie() {
 
                       {/* BUY TICKET */}
                       <button
-                        onClick={() =>
-                          navigate(
-                            `/app/v1/detail/${movie.id}/${slugify(movie.title)}`
-                          )
-                        }
+                        onClick={() => navigate(`/app/v1/order/${movie.id}`)}
                         className="
                             px-6 py-2
                             bg-blue-600 text-white text-sm
