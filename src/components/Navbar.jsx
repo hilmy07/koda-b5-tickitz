@@ -47,12 +47,11 @@ function Navbar() {
         <div className="hidden md:flex items-center gap-4 text-sm">
           {isLoggedIn ? (
             <>
-              {/* EMAIL USER */}
               <span className="text-slate-700 font-medium">{user?.email}</span>
 
               <button
                 onClick={handleLogout}
-                className="px-5 py-2 bg-red-500 text-white rounded-md cursor-pointer active:scale-95 transition"
+                className="px-5 py-2 bg-red-500 text-white rounded-md active:scale-95 transition"
               >
                 Logout
               </button>
@@ -60,13 +59,13 @@ function Navbar() {
           ) : (
             <>
               <Link to="/app/v1/auth/login">
-                <button className="px-5 py-2 border border-blue-600 text-blue-600 rounded-md cursor-pointer active:scale-95 transition">
+                <button className="px-5 py-2 border border-blue-600 text-blue-600 rounded-md active:scale-95 transition">
                   Sign In
                 </button>
               </Link>
 
               <Link to="/app/v1/auth/signup">
-                <button className="px-5 py-2 bg-blue-600 text-white rounded-md cursor-pointer active:scale-95 transition">
+                <button className="px-5 py-2 bg-blue-600 text-white rounded-md active:scale-95 transition">
                   Sign Up
                 </button>
               </Link>
@@ -86,31 +85,41 @@ function Navbar() {
       {/* ================= MOBILE MENU ================= */}
       {open && (
         <div className="md:hidden bg-white border-t border-slate-200">
-          <nav className="flex flex-col items-center gap-4 py-4 text-slate-700">
-            <Link to="/app/v1" onClick={() => setOpen(false)}>
+          <nav className="flex flex-col items-stretch gap-4 py-4 text-slate-700">
+            <Link
+              to="/app/v1"
+              onClick={() => setOpen(false)}
+              className="text-center"
+            >
               <button className={navClass("/app/v1")}>Home</button>
             </Link>
 
-            <Link to="/app/v1/movie" onClick={() => setOpen(false)}>
+            <Link
+              to="/app/v1/movie"
+              onClick={() => setOpen(false)}
+              className="text-center"
+            >
               <button className={navClass("/app/v1/movie")}>Movie</button>
             </Link>
 
-            <button className="hover:text-blue-600 text-lg cursor-pointer active:scale-95 transition">
+            <button className="hover:text-blue-600 text-lg cursor-pointer active:scale-95 transition text-center">
               Buy Ticket
             </button>
 
-            <div className="flex flex-col gap-3 w-full max-w-xs mt-2 items-center">
+            {/* ===== MOBILE AUTH BUTTONS ===== */}
+            <div className="flex flex-col gap-3 w-full px-4 mt-2">
               {isLoggedIn ? (
                 <>
-                  {/* EMAIL USER MOBILE */}
-                  <p className="text-slate-700 font-medium">{user?.email}</p>
+                  <p className="text-slate-700 font-medium text-center">
+                    {user?.email}
+                  </p>
 
                   <button
                     onClick={() => {
                       handleLogout();
                       setOpen(false);
                     }}
-                    className="w-full px-5 py-2 bg-red-500 text-white rounded-md cursor-pointer active:scale-95 transition"
+                    className="w-full px-5 py-2 bg-red-500 text-white rounded-md active:scale-95 transition"
                   >
                     Logout
                   </button>
@@ -118,13 +127,13 @@ function Navbar() {
               ) : (
                 <>
                   <Link to="/app/v1/auth/login" onClick={() => setOpen(false)}>
-                    <button className="w-full px-5 py-2 border border-blue-600 text-blue-600 rounded-md cursor-pointer active:scale-95 transition">
+                    <button className="w-full px-5 py-2 border border-blue-600 text-blue-600 rounded-md active:scale-95 transition">
                       Sign In
                     </button>
                   </Link>
 
                   <Link to="/app/v1/auth/signup" onClick={() => setOpen(false)}>
-                    <button className="w-full px-5 py-2 bg-blue-600 text-white rounded-md cursor-pointer active:scale-95 transition">
+                    <button className="w-full px-5 py-2 bg-blue-600 text-white rounded-md active:scale-95 transition">
                       Sign Up
                     </button>
                   </Link>
