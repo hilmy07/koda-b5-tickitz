@@ -12,11 +12,11 @@ import { useNavigate } from "react-router";
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
-const genreMap = {
-  28: "Action",
-  12: "Adventure",
-  35: "Comedy",
-};
+// const genreMap = {
+//   28: "Action",
+//   12: "Adventure",
+//   35: "Comedy",
+// };
 
 const dateByIndex = {
   0: "December 2024",
@@ -34,6 +34,7 @@ function Home() {
   const [_, setActiveArrow] = useState(null);
   const [firstName, setFirstname] = useState("");
   const [email, setEmail] = useState("");
+  const [genreMap, setGenreMap] = useState({});
   // const [__, setSubscribe] = useState([]);
   const dispatch = useDispatch();
 
@@ -47,6 +48,22 @@ function Home() {
       const data = await res.json();
       setMovies(data.results || []);
     })();
+
+    const getGenre = async () => {
+      const res = await fetch(
+        `https://api.themoviedb.org/3/genre/movie/list?api_key=${API_KEY}`
+      );
+      const data = await res.json();
+      // setGenre(data.genres ?? []);
+
+      const map = {};
+      (data.genres ?? []).forEach((g) => {
+        map[g.id] = g.name;
+      });
+      setGenreMap(map);
+    };
+
+    getGenre();
   }, []);
 
   const handleUpcomingNext = () => {
