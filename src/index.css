@@ -4,3 +4,11 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+.hide-date-icon::-webkit-calendar-picker-indicator {
+  opacity: 0;
+}
+
+.hide-time-icon::-webkit-calendar-picker-indicator {
+  opacity: 0;
+}

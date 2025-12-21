@@ -6,13 +6,9 @@ import Footer from "../components/Footer";
 function MainLayout() {
   return (
     <>
-      <header>
-        <Navbar />
-      </header>
+      <Navbar />
       <Outlet />
-      <footer>
-        <Footer />
-      </footer>
+      <Footer />
     </>
   );
 }

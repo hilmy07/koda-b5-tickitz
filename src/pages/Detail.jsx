@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import Navbar from "../components/Navbar";
 import ebv from "../assets/ebv.png";
@@ -7,12 +7,27 @@ import cineOne from "../assets/cineOne21.png";
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
+const cinemas = [
+  { id: "ebv1", name: "ebv.id", logo: ebv },
+  { id: "hiflix", name: "Hiflix", logo: hiflix },
+  { id: "cineone", name: "CineOne21", logo: cineOne },
+  { id: "ebv2", name: "ebv.id", logo: ebv },
+];
+
 function Detail() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [movie, setMovie] = useState(null);
   const [director, setDirector] = useState(null);
   const [cast, setCast] = useState([]);
+  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedTime, setSelectedTime] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const [activeCinema, setActiveCinema] = useState("hiflix");
+  // const [activeCinema, setActiveCinema] = useState("hiflix");
+
+  const dateRef = useRef(null);
+  const timeRef = useRef(null);
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -45,6 +60,18 @@ function Detail() {
   }
 
   const castNames = cast.map((actor) => actor.name).join(", ");
+
+  const formatTimeAMPM = (time) => {
+    if (!time) return "";
+
+    const [hour, minute] = time.split(":");
+    let h = parseInt(hour, 10);
+    const ampm = h >= 12 ? "PM" : "AM";
+
+    h = h % 12 || 12;
+
+    return `${h}:${minute} ${ampm}`;
+  };
 
   return (
     <>
@@ -158,37 +185,112 @@ function Detail() {
             {/* Choose Date */}
             <div className="flex-1">
               <p className="text-xs text-slate-500 mb-2">Choose Date</p>
-              <button className="w-full flex items-center justify-between px-4 py-3 rounded-md bg-slate-50 border border-slate-200 text-sm text-slate-600">
-                <span className="flex items-center gap-2">
-                  <span className="text-lg">📅</span>
-                  <span>21/07/20</span>
+
+              <div
+                className="relative cursor-pointer"
+                onClick={() => dateRef.current?.showPicker()}
+              >
+                {/* ICON KIRI */}
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600 pointer-events-none">
+                  📅
                 </span>
-                <span className="text-slate-400 text-xs">▼</span>
-              </button>
+
+                <input
+                  ref={dateRef}
+                  type="date"
+                  className="
+                      w-full pl-11 pr-10 py-3
+                      rounded-md bg-slate-50
+                      border border-slate-200
+                      text-sm text-slate-600
+                      focus:outline-none
+                      cursor-pointer
+                      hide-date-icon
+                    "
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                />
+
+                {/* CARET KANAN */}
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+                  ▼
+                </span>
+              </div>
             </div>
 
             {/* Choose Time */}
             <div className="flex-1">
               <p className="text-xs text-slate-500 mb-2">Choose Time</p>
-              <button className="w-full flex items-center justify-between px-4 py-3 rounded-md bg-slate-50 border border-slate-200 text-sm text-slate-600">
-                <span className="flex items-center gap-2">
-                  <span className="text-lg">⏰</span>
-                  <span>08:30 AM</span>
+
+              <div
+                className="relative cursor-pointer"
+                onClick={() => {
+                  timeRef.current?.showPicker?.();
+                  timeRef.current?.focus();
+                }}
+              >
+                {/* ICON KIRI */}
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-600 pointer-events-none">
+                  ⏰
                 </span>
-                <span className="text-slate-400 text-xs">▼</span>
-              </button>
+
+                <input
+                  ref={timeRef}
+                  type="time"
+                  className="
+                      w-full pl-11 pr-10 py-3
+                      rounded-md bg-slate-50
+                      border border-slate-200
+                      text-sm text-slate-600
+                      focus:outline-none
+                      cursor-pointer
+                      hide-time-icon
+                    "
+                  value={selectedTime}
+                  onChange={(e) =>
+                    formatTimeAMPM(setSelectedTime(e.target.value))
+                  }
+                />
+
+                {/* CARET KANAN */}
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+                  ▼
+                </span>
+              </div>
             </div>
 
             {/* Choose Location */}
             <div className="flex-1">
               <p className="text-xs text-slate-500 mb-2">Choose Location</p>
-              <button className="w-full flex items-center justify-between px-4 py-3 rounded-md bg-slate-50 border border-slate-200 text-sm text-slate-600">
-                <span className="flex items-center gap-2">
-                  <span className="text-lg">📍</span>
-                  <span>Purwokerto</span>
+
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                  📍
                 </span>
-                <span className="text-slate-400 text-xs">▼</span>
-              </button>
+
+                <select
+                  className="
+                    w-full pl-10 pr-10 py-3
+                    rounded-md bg-slate-50
+                    border border-slate-200
+                    text-sm text-slate-600
+                    appearance-none
+                    focus:outline-none
+                  "
+                  value={selectedLocation}
+                  onChange={(e) => setSelectedLocation(e.target.value)}
+                >
+                  <option value="">Select city</option>
+                  <option value="jakarta">Jakarta</option>
+                  <option value="bandung">Bandung</option>
+                  <option value="surabaya">Surabaya</option>
+                  <option value="purwokerto">Purwokerto</option>
+                </select>
+
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+                  ▼
+                </span>
+              </div>
             </div>
 
             {/* Filter button */}
@@ -209,33 +311,38 @@ function Detail() {
 
           {/* kartu cinema */}
           <div className="flex gap-4">
-            {/* ebv.id */}
-            <button className="flex-1 h-28 border border-slate-200 rounded-lg flex items-center justify-center bg-white hover:border-blue-500 transition">
-              <img src={ebv} alt="ebv.id" className="h-10 object-contain" />
-            </button>
+            {cinemas.map((cinema) => {
+              const isActive = activeCinema === cinema.id;
 
-            {/* hiflix - active */}
-            <button className="flex-1 h-28 rounded-lg flex items-center justify-center bg-blue-600 shadow-md">
-              <img
-                src={hiflix}
-                alt="Hiflix"
-                className="h-10 object-contain invert"
-              />
-            </button>
-
-            {/* CineOne21 */}
-            <button className="flex-1 h-28 border border-slate-200 rounded-lg flex items-center justify-center bg-white hover:border-blue-500 transition">
-              <img
-                src={cineOne}
-                alt="CineOne21"
-                className="h-10 object-contain"
-              />
-            </button>
-
-            {/* ebv.id lagi */}
-            <button className="flex-1 h-28 border border-slate-200 rounded-lg flex items-center justify-center bg-white hover:border-blue-500 transition">
-              <img src={ebv} alt="ebv.id" className="h-10 object-contain" />
-            </button>
+              return (
+                <button
+                  key={cinema.id}
+                  onClick={() => setActiveCinema(cinema.id)}
+                  className={`
+                    flex-1 h-28 rounded-lg flex items-center justify-center transition
+                    ${
+                      isActive
+                        ? "bg-blue-600 shadow-md"
+                        : "bg-white border border-slate-200 hover:border-blue-500"
+                    }
+                  `}
+                >
+                  <img
+                    src={cinema.logo}
+                    alt={cinema.name}
+                    className={`
+                        h-10 object-contain
+                        transition
+                        ${
+                          isActive
+                            ? "filter brightness-0 saturate-100 invert"
+                            : ""
+                        }
+                      `}
+                  />
+                </button>
+              );
+            })}
           </div>
 
           {/* pagination */}
@@ -258,7 +365,16 @@ function Detail() {
           <div className="flex justify-center mt-6 mb-4">
             <button
               className="px-10 py-3 rounded-md bg-blue-600 text-white text-sm font-medium shadow"
-              onClick={() => navigate(`/app/v1/order/${movie.id}`)}
+              onClick={() =>
+                navigate(`/app/v1/order/${movie.id}/${selectedLocation}`, {
+                  state: {
+                    date: selectedDate,
+                    time: formatTimeAMPM(selectedTime),
+                    location: selectedLocation,
+                    cinema: cinemas.find((c) => c.id === activeCinema),
+                  },
+                })
+              }
             >
               Book Now
             </button>

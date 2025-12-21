@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import image1 from "../../public/image.png";
-import image from "../../public/image1.png";
+// import image1 from "../../public/image.png";
+import image1 from "../assets/image.png";
+import image from "../assets/image1.png";
 import { useDispatch } from "react-redux";
 import { addSubscribe } from "../redux/reducers/subscribes";
 import { useNavigate } from "react-router";
@@ -14,6 +15,7 @@ function Movie() {
   const [firstName, setFirstname] = useState("");
   const [email, setEmail] = useState("");
   const [selectedGenre, setSelectedGenre] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [movies, setMovies] = useState([]);
   const [genre, setGenre] = useState([]);
@@ -111,9 +113,13 @@ function Movie() {
     }
   };
 
-  const filteredMovies = selectedGenre
-    ? movies.filter((movie) => movie.genre_ids.includes(selectedGenre))
-    : movies;
+  const filteredMovies = movies
+    .filter((movie) =>
+      selectedGenre ? movie.genre_ids.includes(selectedGenre) : true
+    )
+    .filter((movie) =>
+      movie.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
   const slugify = (text) =>
     text
@@ -156,6 +162,8 @@ function Movie() {
                     type="text"
                     placeholder="Search Movie"
                     className="w-full outline-none text-sm"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
               </div>
@@ -220,7 +228,7 @@ function Movie() {
                       <button
                         onClick={() =>
                           navigate(
-                            `/app/v1/detail/${movie.id}/${slugify(movie.title)}`
+                            `/app/v1/movie/${movie.id}/${slugify(movie.title)}`
                           )
                         }
                         className="
@@ -237,7 +245,11 @@ function Movie() {
 
                       {/* BUY TICKET */}
                       <button
-                        onClick={() => navigate(`/app/v1/order/${movie.id}`)}
+                        onClick={() =>
+                          navigate(
+                            `/app/v1/movie/${movie.id}/${slugify(movie.title)}`
+                          )
+                        }
                         className="
                             px-6 py-2
                             bg-blue-600 text-white text-sm
@@ -315,14 +327,14 @@ function Movie() {
                 <button
                   onClick={() => setPage(totalPages)}
                   className={`
-        w-9 h-9 flex items-center justify-center rounded-full text-sm font-medium
-        ${
-          page === totalPages
-            ? "bg-blue-600 text-white"
-            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-        }
-        transition
-      `}
+                      w-9 h-9 flex items-center justify-center rounded-full text-sm font-medium
+                      ${
+                        page === totalPages
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      }
+                      transition
+                    `}
                 >
                   {totalPages}
                 </button>
@@ -333,11 +345,11 @@ function Movie() {
                 onClick={handleNextPage}
                 disabled={page === totalPages}
                 className="
-      w-9 h-9 flex items-center justify-center rounded-full
-      bg-blue-600 text-white
-      hover:bg-blue-700 transition
-      disabled:opacity-40
-    "
+                    w-9 h-9 flex items-center justify-center rounded-full
+                    bg-blue-600 text-white
+                    hover:bg-blue-700 transition
+                    disabled:opacity-40
+                  "
               >
                 →
               </button>

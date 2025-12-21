@@ -1,17 +1,43 @@
 import React, { useState } from "react";
+import { useParams, useLocation } from "react-router-dom";
+import gpay from "../assets/Gpay.png";
+import visa from "../assets/visa.png";
+import gopay from "../assets/gopay.png";
+import paypal from "../assets/paypal.png";
+import dana from "../assets/dana.png";
+import bca from "../assets/bca.png";
+import bri from "../assets/bri.png";
+import ovo from "../assets/ovo.png";
 
 function Payment() {
-  // contoh data dummy, bisa kamu ganti dari props / context / params
-  const [movieTitle] = useState("Spider-Man: Homecoming");
-  const [cinemaName] = useState("CineOne21 Cinema");
-  const [dateTime] = useState("Tuesday, 07 July 2020 at 02:00pm");
-  const [tickets] = useState(3);
+  const { id } = useParams(); // param dari /payment/:id (dipakai biar ga unused)
+  const { state } = useLocation();
+  // const navigate = useNavigate();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // data dari Order.jsx (navigate(..., { state: {...} }))
+  const {
+    movieTitle,
+    cinemaName,
+    date,
+    time,
+    selectedSeats,
+    ticketPrice,
+    totalPayment,
+  } = state;
 
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
-  const ticketPrice = 10;
-  const totalPayment = tickets * ticketPrice;
+
+  const tickets = selectedSeats?.length || 0;
+  const dateTime = `${date || "-"} at ${time || "-"}`;
+
+  // pastikan total ada walau kamu lupa kirim totalPayment dari Order
+  const computedTotalPayment =
+    typeof totalPayment === "number"
+      ? totalPayment
+      : tickets * (ticketPrice || 0);
 
   const steps = [
     { id: 1, label: "Dates And Time" },
@@ -20,6 +46,17 @@ function Payment() {
   ];
 
   const activeStep = 3;
+
+  const methods = [
+    { label: "GPay", img: gpay },
+    { label: "VISA", img: visa },
+    { label: "Gopay", img: gopay },
+    { label: "Paypal", img: paypal },
+    { label: "DANA", img: dana },
+    { label: "BCA", img: bca },
+    { label: "BRI", img: bri },
+    { label: "OVO", img: ovo },
+  ];
 
   return (
     <main className="min-h-screen bg-[#f5f6f8] py-24 px-4 md:px-0">
@@ -93,8 +130,11 @@ function Payment() {
             <div className="pt-2 border-t border-gray-300">
               <p className="uppercase tracking-wide">Total Payment</p>
               <p className="text-blue-600 font-semibold text-sm mt-2 pb-2 border-b border-gray-300">
-                ${totalPayment}.00
+                ${computedTotalPayment}.00
               </p>
+
+              {/* optional: biar param id kepakai dan jelas */}
+              <p className="text-[11px] text-gray-400 mt-2">Order ID: {id}</p>
             </div>
           </div>
         </section>
@@ -134,24 +174,15 @@ function Payment() {
         <section className="mb-6">
           <h2 className="text-lg font-semibold mb-4">Payment Method</h2>
 
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              "GPay",
-              "VISA",
-              "Gopay",
-              "Paypal",
-              "DANA",
-              "BCA",
-              "BRI",
-              "OVO",
-              "Mandiri",
-            ].map((m) => (
+          <div className="grid grid-cols-4 gap-3">
+            {methods.map((m) => (
               <button
-                key={m}
+                key={m.label}
                 type="button"
-                className="h-12 border border-gray-200 rounded-md flex items-center justify-center bg-gray-50 hover:bg-gray-100"
+                className="h-12 border border-gray-200 rounded-md flex items-center justify-center hover:bg-gray-100"
+                title={m.label}
               >
-                <span className="text-xs font-medium text-gray-700">{m}</span>
+                <img src={m.img} alt={m.label} className="h-6 object-contain" />
               </button>
             ))}
           </div>

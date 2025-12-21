@@ -2,8 +2,16 @@ import React, { useState } from "react";
 import { Link } from "react-router";
 import google from "../assets/google.png";
 import facebook from "../assets/facebook.png";
+import { useDispatch, useSelector } from "react-redux";
+import { registerThunk } from "../redux/reducers/auth";
+import { useNavigate } from "react-router";
 
-function Login() {
+function SignUp() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const { loading } = useSelector((state) => state.auth);
+
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -14,8 +22,21 @@ function Login() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const data = { email: form.email, password: form.password };
-    console.log(data);
+    if (!form.email || !form.password) {
+      alert("Email dan password wajib diisi");
+      return;
+    }
+
+    dispatch(
+      registerThunk({
+        email: form.email,
+        password: form.password,
+      })
+    ).then((res) => {
+      if (res.meta.requestStatus === "fulfilled") {
+        navigate("/app/v1/auth/login"); // setelah signup → ke login
+      }
+    });
   };
 
   return (
@@ -109,14 +130,17 @@ function Login() {
             </div>
           </div>
 
-          <button className="w-full bg-[#1d4ed8] text-white py-2 rounded-md hover:bg-blue-800 transition">
-            Join for free
+          <button
+            className="w-full bg-[#1d4ed8] text-white py-2 rounded-md hover:bg-blue-800 transition"
+            disabled={loading}
+          >
+            {loading ? "Loading..." : "Join for free"}
           </button>
 
           <div className="flex justify-center mt-4">
             <p>
               Already have an account?{" "}
-              <Link to="/login" className="hover:text-blue-800">
+              <Link to="/app/v1/auth/login" className="hover:text-blue-800">
                 Log in
               </Link>
             </p>
@@ -153,4 +177,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default SignUp;

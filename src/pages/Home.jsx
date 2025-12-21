@@ -1,28 +1,18 @@
-import React, { useEffect, useState } from "react";
-import Navbar from "../components/Navbar";
+import React, { useEffect, useRef, useState } from "react";
 import Guaranteed from "../assets/guaranteed.png";
 import Affordable from "../assets/affordable.png";
 import Customer from "../assets/customer.png";
-import Footer from "../components/Footer";
-// import { useSelector } from "react-redux";
-// import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { addSubscribe } from "../redux/reducers/subscribes";
 import { useNavigate } from "react-router";
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
-// const genreMap = {
-//   28: "Action",
-//   12: "Adventure",
-//   35: "Comedy",
-// };
-
-const dateByIndex = {
-  0: "December 2024",
-  1: "Maret 2025",
-  2: "June 2024",
-  3: "March 2024",
+const formatDate = (value) => {
+  if (!value) return "Coming soon";
+  const d = new Date(value);
+  const options = { day: "numeric", month: "long", year: "numeric" };
+  return d.toLocaleDateString("en-US", options);
 };
 
 const VISIBLE_COUNT = 4;
@@ -35,8 +25,10 @@ function Home() {
   const [firstName, setFirstname] = useState("");
   const [email, setEmail] = useState("");
   const [genreMap, setGenreMap] = useState({});
-  // const [__, setSubscribe] = useState([]);
+  const [upcomingMovies, setUpcomingMovies] = useState([]);
   const dispatch = useDispatch();
+  const [showAllMovies, setShowAllMovies] = useState(false);
+  const moviesRef = useRef(null);
 
   // const subscribes = useSelector((state) => state.subscribes.items);
 
@@ -47,6 +39,14 @@ function Home() {
       );
       const data = await res.json();
       setMovies(data.results || []);
+    })();
+
+    (async () => {
+      const res = await fetch(
+        `https://api.themoviedb.org/3/movie/upcoming?api_key=${API_KEY}`
+      );
+      const data = await res.json();
+      setUpcomingMovies(data.results || []);
     })();
 
     const getGenre = async () => {
@@ -84,7 +84,7 @@ function Home() {
     setActiveArrow("prev");
   };
 
-  const desktopUpcoming = movies.slice(
+  const desktopUpcoming = upcomingMovies.slice(
     upcomingStart,
     upcomingStart + VISIBLE_COUNT
   );
@@ -103,6 +103,7 @@ function Home() {
     setFirstname("");
     setEmail("");
   };
+
   const slugify = (text) =>
     text
       .toLowerCase()
@@ -224,7 +225,7 @@ function Home() {
           </section>
 
           {/* MOVIES (tanpa carousel di desktop) */}
-          <section className="mb-16">
+          <section ref={moviesRef} className="mb-16 scroll-mt-28">
             <div className="flex flex-col text-center mb-6">
               <h1 className="text-[#1d4ed8] text-xs md:text-2xl tracking-[0.2em] font-semibold">
                 MOVIES
@@ -234,37 +235,97 @@ function Home() {
               </h2>
             </div>
 
-            {/* MOBILE: 2 movies */}
-            <div className="flex overflow-x-hidden justify-end mb-12 md:hidden">
-              {movies.slice(0, 2).map((movie, index) => (
-                <div key={movie.id}>
-                  <img
-                    src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                    alt={movie.title}
-                    className={`h-[230px] w-[170px] mb-2 rounded ${
-                      index === 1 ? "scale-100 translate-x-10 w-[50px]" : ""
-                    }`}
-                  />
-                  <h1
-                    className={`font-medium text-l mb-2 ${
-                      index === 1 ? "translate-x-10" : ""
-                    }`}
-                  >
+            {/* MOBILE movies */}
+            <div className="md:hidden">
+              <div className="flex gap-4 overflow-x-auto pb-4">
+                {movies.map((movie) => (
+                  <div key={movie.id} className="shrink-0 w-[160px]">
+                    <img
+                      src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                      alt={movie.title}
+                      className="h-[230px] w-full rounded-lg object-cover mb-3"
+                    />
+
+                    <h3 className="text-sm font-medium text-slate-900 truncate mb-2">
+                      {movie.title}
+                    </h3>
+
+                    <div className="flex flex-wrap gap-1">
+                      {movie.genre_ids?.map((id) => (
+                        <span
+                          key={id}
+                          className="px-2 py-[2px] text-[10px] rounded-full bg-slate-100 text-slate-600 border"
+                        >
+                          {genreMap[id]}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* DESKTOP: 4 movies statis */}
+            <div
+              className="
+                  hidden md:grid
+                  grid-cols-4
+                  gap-x-8 gap-y-12
+                  justify-items-center
+                  mb-4
+                  transition-all duration-500
+                "
+            >
+              {movies.slice(0, showAllMovies ? 12 : 4).map((movie) => (
+                <div key={movie.id} className="w-[300px] text-center">
+                  <div className="relative group h-[350px] w-[270px] rounded-lg overflow-hidden shadow-md">
+                    <img
+                      src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                      alt={movie.title}
+                      className="w-full h-full object-cover"
+                    />
+
+                    <div
+                      className="
+                        absolute inset-0 bg-black/60
+                        flex flex-col items-center justify-center gap-4
+                        opacity-0 group-hover:opacity-100
+                        transition-opacity
+                      "
+                    >
+                      <button
+                        className="px-8 py-2 border border-white text-white text-sm rounded hover:bg-white hover:text-black transition"
+                        onClick={() =>
+                          navigate(
+                            `/app/v1/movie/${movie.id}/${slugify(movie.title)}`
+                          )
+                        }
+                      >
+                        Details
+                      </button>
+
+                      <button
+                        className="px-6 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition"
+                        onClick={() => navigate(`/app/v1/order/${movie.id}`)}
+                      >
+                        Buy Ticket
+                      </button>
+                    </div>
+                  </div>
+
+                  <h3 className="mt-3 text-sm font-medium text-slate-900 truncate text-left">
                     {movie.title}
-                  </h1>
-                  <div
-                    className={`flex gap-2 flex-wrap ${
-                      index === 1 ? "translate-x-10" : ""
-                    }`}
-                  >
-                    {movie.genre_ids?.slice(0, 3).map((id) => {
+                  </h3>
+
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {movie.genre_ids?.map((id) => {
                       const name = genreMap[id];
                       if (!name) return null;
 
                       return (
                         <span
                           key={id}
-                          className="px-3 py-1 text-xs bg-slate-100 text-slate-600 rounded-full border border-slate-200"
+                          className="px-3 py-1 text-[11px] rounded-full bg-slate-100 text-slate-600 border border-slate-200"
                         >
                           {name}
                         </span>
@@ -275,87 +336,22 @@ function Home() {
               ))}
             </div>
 
-            {/* DESKTOP: 4 movies statis */}
-            <div className="hidden md:flex justify-center gap-8 mb-4">
-              {movies.slice(0, 4).map((movie) => (
-                <div key={movie.id} className="w-[300px] text-center">
-                  {/* POSTER */}
-                  <div className="relative group h-[350px] w-[270px] rounded-lg overflow-hidden shadow-md">
-                    {/* IMAGE */}
-                    <img
-                      src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                      alt={movie.title}
-                      className="w-full h-full object-cover"
-                    />
+            <div className="hidden md:flex justify-center mt-6">
+              <button
+                onClick={() => {
+                  setShowAllMovies((prev) => !prev);
 
-                    {/* OVERLAY */}
-                    <div
-                      className="
-                            absolute inset-0
-                            bg-black/60
-                            flex flex-col items-center justify-center gap-4
-                            opacity-0 group-hover:opacity-100
-                            transition-opacity duration-300
-                          "
-                    >
-                      {/* DETAILS */}
-                      <button
-                        className="
-                              px-8 py-2
-                              border border-white
-                              text-white text-sm
-                              rounded
-                              hover:bg-white hover:text-black
-                              transition
-                            "
-                        onClick={() =>
-                          navigate(
-                            `/app/v1/detail/${movie.id}/${slugify(movie.title)}`
-                          )
-                        }
-                      >
-                        Details
-                      </button>
-
-                      {/* BUY TICKET */}
-                      <button
-                        className="
-                            px-6 py-2
-                            bg-blue-600 text-white text-sm
-                            rounded
-                            hover:bg-blue-700
-                            transition
-                          "
-                        onClick={() => navigate(`/app/v1/order/${movie.id}`)}
-                      >
-                        Buy Ticket
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* TITLE */}
-                  <h3 className="mt-3 text-sm font-medium text-slate-900 truncate">
-                    {movie.title}
-                  </h3>
-
-                  {/* GENRE */}
-                  <div className="mt-2 flex flex-wrap gap-2 justify-center">
-                    {movie.genre_ids?.slice(0, 3).map((id) => {
-                      const name = genreMap[id];
-                      if (!name) return null;
-
-                      return (
-                        <span
-                          key={id}
-                          className="px-2 py-0.5 text-[11px] rounded-full bg-slate-100 text-slate-600 border border-slate-200"
-                        >
-                          {name}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+                  setTimeout(() => {
+                    moviesRef.current?.scrollIntoView({
+                      behavior: "smooth",
+                      block: "start",
+                    });
+                  }, 100);
+                }}
+                className="text-blue-600 font-medium hover:underline transition"
+              >
+                {showAllMovies ? "← Show Less" : "View All →"}
+              </button>
             </div>
           </section>
 
@@ -399,39 +395,38 @@ function Home() {
               </div>
             </div>
 
-            {/* MOBILE: UPCOMING SCROLL */}
-            <div className="flex overflow-x-auto flex-nowrap gap-6 mb-12 md:hidden px-2">
-              {movies.map((movie, index) => (
-                <div key={movie.id} className="shrink-0">
-                  <img
-                    src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                    alt={movie.title}
-                    className="h-[230px] w-[170px] mb-2 rounded"
-                  />
+            {/* MOBILE: UPCOMING */}
+            <div className="md:hidden">
+              <div className="flex gap-4 overflow-x-auto pb-4">
+                {upcomingMovies.map((movie) => (
+                  <div key={movie.id} className="shrink-0 w-[160px]">
+                    <img
+                      src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                      alt={movie.title}
+                      className="h-[230px] w-full rounded-lg object-cover mb-3"
+                    />
 
-                  <h1 className="font-medium text-l">{movie.title}</h1>
+                    <h3 className="text-sm font-medium text-slate-900 truncate">
+                      {movie.title}
+                    </h3>
 
-                  <p className="text-[#1d4ed8] mb-2">
-                    {dateByIndex[index] ?? "Coming soon"}
-                  </p>
+                    <p className="text-xs text-blue-600 mb-2">
+                      {formatDate(movie.release_date)}
+                    </p>
 
-                  <div className="flex gap-2 flex-wrap">
-                    {movie.genre_ids?.slice(0, 3).map((id) => {
-                      const name = genreMap[id];
-                      if (!name) return null;
-
-                      return (
+                    <div className="flex flex-wrap gap-1">
+                      {movie.genre_ids?.map((id) => (
                         <span
                           key={id}
-                          className="px-3 py-1 text-xs bg-slate-100 text-slate-600 rounded-full border border-slate-200"
+                          className="px-2 py-[2px] text-[10px] rounded-full bg-slate-100 text-slate-600 border"
                         >
-                          {name}
+                          {genreMap[id]}
                         </span>
-                      );
-                    })}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             {/* DESKTOP: 4 upcoming dengan carousel */}
@@ -444,7 +439,7 @@ function Home() {
               </button>
 
               <div className="flex justify-center flex-1">
-                {desktopUpcoming.map((movie, index) => (
+                {desktopUpcoming.map((movie) => (
                   <div key={movie.id} className="w-[300px] text-center">
                     <div className="h-[350px] w-[270px] rounded-lg overflow-hidden shadow-md">
                       <img
@@ -453,21 +448,21 @@ function Home() {
                         className="w-full h-full object-cover"
                       />
                     </div>
-                    <h3 className="mt-3 text-sm font-medium text-slate-900 truncate">
+                    <h3 className="mt-3 text-sm font-medium text-slate-900 truncate text-left">
                       {movie.title}
                     </h3>
-                    <p className="text-[#1d4ed8] text-xs mt-1 mb-1">
-                      {dateByIndex[index] ?? "Coming soon"}
+                    <p className="text-[#1d4ed8] text-xs mt-1 mb-1 text-left">
+                      {formatDate(movie.release_date)}
                     </p>
-                    <div className="mt-1 flex flex-wrap gap-2 justify-center">
-                      {movie.genre_ids?.slice(0, 3).map((id) => {
+                    <div className="mt-1 flex flex-wrap gap-2">
+                      {movie.genre_ids?.map((id) => {
                         const name = genreMap[id];
                         if (!name) return null;
 
                         return (
                           <span
                             key={id}
-                            className="px-2 py-0.5 text-[11px] rounded-full bg-slate-100 text-slate-600 border border-slate-200"
+                            className="px-3 py-1 text-[11px] rounded-full bg-slate-100 text-slate-600 border border-slate-200"
                           >
                             {name}
                           </span>

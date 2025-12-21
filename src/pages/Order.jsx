@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router";
-import cineOne from "../assets/cineOne21.png";
+import { useParams, useLocation, useNavigate } from "react-router";
+// import cineOne from "../assets/cineOne21.png";
+// import { useParams, useLocation } from "react-router";
 
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY;
 
 function Order() {
   const { id } = useParams();
+  const { state } = useLocation();
+  const navigate = useNavigate();
+
   const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
 
   const rows = ["A", "B", "C", "D", "E", "F", "G"];
@@ -13,6 +17,9 @@ function Order() {
 
   const [selected, setSelected] = useState([]);
   const [movie, setMovie] = useState(null);
+
+  const ticketPrice = 10; // cukup const
+  const totalPayment = selected.length * ticketPrice;
 
   const [selectedRow, setSelectedRow] = useState("C");
   const [selectedCol, setSelectedCol] = useState("4");
@@ -46,6 +53,25 @@ function Order() {
   ];
 
   const activeStep = 2;
+  const { date, time, cinema } = state || {};
+
+  const orderId = Number(id);
+  if (Number.isNaN(orderId)) return;
+
+  // const { id } = useParams();
+  const handleCheckout = () => {
+    navigate(`/app/v1/payment/${orderId}`, {
+      state: {
+        movieTitle: movie?.title,
+        cinemaName: cinema?.name,
+        date,
+        time,
+        selectedSeats: selected,
+        ticketPrice,
+        totalPayment,
+      },
+    });
+  };
 
   return (
     <>
@@ -340,13 +366,13 @@ function Order() {
             </div>
 
             {/* ========================= RIGHT PANEL (DESKTOP) ========================= */}
-            <div className="hidden md:block">
+            <div className="hidden md:block" key={id}>
               <div className="w-full md:w-80 bg-white rounded shadow p-6">
                 <div className="flex justify-center">
-                  <img src={cineOne} alt="cineOneCinema" />
+                  <img src={cinema?.logo} alt={cinema?.name} />
                 </div>
                 <p className="mb-4 text-center font-medium text-xl">
-                  CineOne21 Cinema
+                  {cinema?.name}
                 </p>
 
                 <div className="text-sm space-y-2">
@@ -356,8 +382,8 @@ function Order() {
                   </div>
 
                   <div className="flex justify-between">
-                    <strong>Date</strong>
-                    <span>Tuesday, 17 July 2020</span>
+                    <span>{date || "-"}</span>
+                    <span>{time || "-"}</span>
                   </div>
 
                   <div className="flex justify-between">
@@ -375,11 +401,14 @@ function Order() {
 
                 <div className="flex justify-between items-center text-lg font-semibold">
                   <span>Total Payment</span>
-                  <span className="text-blue-600">${selected.length * 10}</span>
+                  <span className="text-blue-600">${totalPayment}</span>
                 </div>
               </div>
 
-              <button className="mt-6 w-full py-2 bg-blue-600 text-white rounded-lg">
+              <button
+                className="mt-6 w-full py-2 bg-blue-600 text-white rounded-lg"
+                onClick={handleCheckout}
+              >
                 Checkout now
               </button>
             </div>
@@ -436,6 +465,7 @@ function Order() {
                   className="w-full py-3 bg-blue-600 text-white rounded-lg text-sm font-semibold"
                   onClick={() => {
                     // di sini nanti bisa navigate ke payment / confirmation
+                    handleCheckout();
                     setIsMobileModalOpen(false);
                   }}
                 >

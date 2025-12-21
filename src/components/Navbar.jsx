@@ -8,6 +8,7 @@ function Navbar() {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const { isLoggedIn, user, logout } = useAuth();
 
@@ -15,10 +16,10 @@ function Navbar() {
     `hover:text-blue-600 text-lg cursor-pointer active:scale-95 transition
      ${pathname === to ? "border-b-2 border-blue-600 text-blue-600" : ""}`;
 
-  const handleLogout = () => {
-    logout();
-    navigate("/app/v1/auth/login");
-  };
+  // const handleLogout = () => {
+  //   logout();
+  //   navigate("/app/v1/auth/login");
+  // };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-20 bg-white shadow-sm">
@@ -47,10 +48,19 @@ function Navbar() {
         <div className="hidden md:flex items-center gap-4 text-sm">
           {isLoggedIn ? (
             <>
-              <span className="text-slate-700 font-medium">{user?.email}</span>
+              <div className="flex items-center">
+                <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold uppercase">
+                  {user?.email?.[0] || "?"}
+                </div>
+                <div className="bg-gray-50 rounded-full px-4 py-1">
+                  <span className="text-slate-700 font-medium">
+                    {user?.email}
+                  </span>
+                </div>
+              </div>
 
               <button
-                onClick={handleLogout}
+                onClick={() => setShowLogoutModal(true)}
                 className="px-5 py-2 bg-red-500 text-white rounded-md active:scale-95 transition"
               >
                 Logout
@@ -110,13 +120,20 @@ function Navbar() {
             <div className="flex flex-col gap-3 w-full px-4 mt-2">
               {isLoggedIn ? (
                 <>
-                  <p className="text-slate-700 font-medium text-center">
-                    {user?.email}
-                  </p>
+                  <div className="flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold uppercase">
+                      {user?.email?.[0] || "?"}
+                    </div>
+                    <div className="bg-gray-50 rounded-full px-4 py-1">
+                      <span className="text-slate-700 font-medium">
+                        {user?.email}
+                      </span>
+                    </div>
+                  </div>
 
                   <button
                     onClick={() => {
-                      handleLogout();
+                      setShowLogoutModal(true);
                       setOpen(false);
                     }}
                     className="w-full px-5 py-2 bg-red-500 text-white rounded-md active:scale-95 transition"
@@ -141,6 +158,47 @@ function Navbar() {
               )}
             </div>
           </nav>
+        </div>
+      )}
+
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          {/* Overlay */}
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setShowLogoutModal(false)}
+          />
+
+          {/* Modal */}
+          <div className="relative bg-white rounded shadow-lg w-[90%] max-w-md p-6 animate-scaleIn">
+            <h2 className="text-xl font-semibold text-slate-800">
+              Confirm Logout
+            </h2>
+
+            <p className="text-slate-600 mt-2">
+              Are you sure you want to quit?
+            </p>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className="px-4 py-2 rounded-md border border-slate-300 text-slate-600 hover:bg-slate-100 transition"
+              >
+                No
+              </button>
+
+              <button
+                onClick={() => {
+                  logout();
+                  setShowLogoutModal(false);
+                  navigate("/app/v1/auth/login");
+                }}
+                className="px-4 py-2 rounded-md bg-red-500 text-white hover:bg-red-600 transition"
+              >
+                Yes
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </header>
