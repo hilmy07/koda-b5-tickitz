@@ -6,7 +6,7 @@ Halaman Home
 Halaman Login
 
 <img width="1919" height="1079" alt="image" src="https://github.com/user-attachments/assets/02e065fc-d58a-4540-9d02-bb1ceb31b4de" />
-Halaman Register
+Halaman Register <br/>
 
 4.  Jawaban
 perbedaan kernel x distro
